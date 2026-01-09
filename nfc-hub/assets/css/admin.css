@@ -1,0 +1,225 @@
+/**
+ * NFC Hub Admin Styles
+ *
+ * @package NFCHub
+ */
+
+/* Analytics Page */
+.nfchub-analytics {
+	max-width: 1400px;
+}
+
+/* Filter */
+.nfchub-filter {
+	margin: 20px 0;
+	padding: 15px;
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+}
+
+.nfchub-filter label {
+	margin-right: 10px;
+	font-weight: 600;
+}
+
+.nfchub-filter select {
+	margin-right: 10px;
+	min-width: 200px;
+}
+
+/* Summary Cards */
+.nfchub-summary {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 20px;
+	margin: 20px 0;
+}
+
+/* Card */
+.nfchub-card {
+	background: #fff;
+	border: 1px solid #ccd0d4;
+	border-radius: 4px;
+	padding: 20px;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.nfchub-card h3 {
+	margin-top: 0;
+	margin-bottom: 15px;
+	padding-bottom: 10px;
+	border-bottom: 2px solid #2271b1;
+	color: #2271b1;
+}
+
+/* Stats */
+.nfchub-stat {
+	display: flex;
+	gap: 20px;
+	flex-wrap: wrap;
+}
+
+.nfchub-stat-item {
+	flex: 1;
+	min-width: 100px;
+	text-align: center;
+}
+
+.nfchub-stat-label {
+	display: block;
+	font-size: 12px;
+	color: #646970;
+	margin-bottom: 5px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.nfchub-stat-value {
+	display: block;
+	font-size: 32px;
+	font-weight: 700;
+	color: #1d2327;
+	line-height: 1;
+}
+
+/* Top Stats */
+.nfchub-top-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 20px;
+	margin: 20px 0;
+}
+
+.nfchub-top-stats table {
+	margin-top: 10px;
+}
+
+.nfchub-top-stats th {
+	background: #f6f7f7;
+	font-weight: 600;
+}
+
+.nfchub-top-stats td {
+	padding: 8px 10px;
+}
+
+/* Recent Events Table */
+#nfchub-recent-events {
+	margin-top: 10px;
+}
+
+#nfchub-recent-events th {
+	background: #f6f7f7;
+	font-weight: 600;
+}
+
+#nfchub-recent-events td {
+	padding: 8px 10px;
+	font-size: 13px;
+}
+
+#nfchub-recent-events a {
+	text-decoration: none;
+	color: #2271b1;
+}
+
+#nfchub-recent-events a:hover {
+	text-decoration: underline;
+}
+
+/* Loading State */
+.nfchub-loading {
+	text-align: center;
+	padding: 40px;
+	color: #646970;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+	.nfchub-summary,
+	.nfchub-top-stats {
+		grid-template-columns: 1fr;
+	}
+
+	.nfchub-stat {
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.nfchub-stat-item {
+		min-width: auto;
+	}
+
+	.nfchub-filter {
+		text-align: center;
+	}
+
+	.nfchub-filter label,
+	.nfchub-filter select,
+	.nfchub-filter button {
+		display: block;
+		margin: 10px auto;
+		width: 100%;
+		max-width: 300px;
+	}
+}
+
+/* Action Field Styling (Metabox) */
+.nfchub-action-field {
+	transition: all 0.3s ease;
+}
+
+.nfchub-action-field:hover {
+	background: #f0f0f1 !important;
+	border-color: #2271b1 !important;
+}
+
+.nfchub-action-field input[type="checkbox"] {
+	margin-right: 5px;
+}
+
+.nfchub-action-field input[type="url"],
+.nfchub-action-field input[type="text"] {
+	padding: 8px;
+	border: 1px solid #8c8f94;
+	border-radius: 4px;
+}
+
+.nfchub-action-field input[type="url"]:focus,
+.nfchub-action-field input[type="text"]:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 1px #2271b1;
+}
+
+/* NFC URL Display */
+.nfchub-nfc-url {
+	margin-top: 20px;
+	animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.nfchub-nfc-url h3 {
+	margin-top: 0;
+	color: #00a32a;
+}
+
+.nfchub-nfc-url code {
+	background: #fff;
+	padding: 10px 15px;
+	display: inline-block;
+	border-radius: 4px;
+	border: 1px solid #00a32a;
+	word-break: break-all;
+}
