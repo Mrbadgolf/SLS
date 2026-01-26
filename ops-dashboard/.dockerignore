@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Environment files
+.env
+.env.*
+*.env.local
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Scripts (mounted separately)
+scripts/
+
+# Config files (mounted separately)
+config/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Development
+tests/
+*.test.py

@@ -1,0 +1,108 @@
+# Operations Dashboard - Docker Compose
+# Self-hosted operations dashboard for Docker streaming stack
+#
+# IMPORTANT: This uses Traefik FILE PROVIDER routing only.
+# No Docker labels are used for routing.
+#
+# Routing is defined in: config/traefik-ops-dashboard.yml
+# Copy that file to your Traefik dynamic config directory.
+
+version: '3.8'
+
+services:
+  ops-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ops-dashboard:latest
+    container_name: ops-dashboard
+    restart: unless-stopped
+
+    # NO exposed ports - routed via Traefik file provider only
+    # ports:
+    #   - "8080:8080"
+
+    environment:
+      # OliveTin URL for action buttons
+      - OLIVETIN_URL=${OLIVETIN_URL:-https://olivetin.geaux-tv.com}
+
+      # Netdata URL for stats link
+      - NETDATA_URL=${NETDATA_URL:-https://netdata.geaux-tv.com}
+
+      # Portainer URL for deep management link
+      - PORTAINER_URL=${PORTAINER_URL:-https://portainer.geaux-tv.com}
+
+      # Docker socket path (inside container)
+      - DOCKER_SOCKET=/var/run/docker.sock
+
+      # Traefik access log for streaming activity
+      - TRAEFIK_ACCESS_LOG=/var/log/traefik/access.log
+
+      # Streaming patterns to track
+      - STREAMING_PATTERNS=/stream,/play,/video,/hls,/dash,/manifest,/stremio
+
+      # Active streaming window (minutes)
+      - ACTIVE_WINDOW_MINUTES=5
+
+      # Backup configuration
+      - RESTIC_REPOSITORY=/opt/backups/restic
+      - RESTIC_PASSWORD=${RESTIC_PASSWORD:-}
+      - COMPOSE_DIR=/opt/stremio-stack
+      - BACKUP_PATHS=/opt/stremio-stack
+
+      # Disk paths to monitor
+      - MONITOR_DISKS=/,/opt
+
+      # Managed stacks (comma-separated)
+      - MANAGED_STACKS=stremio
+
+    volumes:
+      # Docker socket for container management (read-only for safety)
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+      # Traefik logs for streaming activity (read-only)
+      - ${TRAEFIK_LOG_DIR:-/var/log/traefik}:/var/log/traefik:ro
+
+      # Compose files for stack management
+      - ${COMPOSE_DIR:-/opt/stremio-stack}:/opt/stremio-stack:ro
+
+      # Backup repository (read-write for backup/restore)
+      - ${BACKUP_DIR:-/opt/backups}:/opt/backups
+
+      # Host filesystem for disk stats (read-only)
+      - /:/hostfs:ro
+
+    networks:
+      - stremio
+      - internal
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  # Shared network with Traefik for routing
+  stremio:
+    external: true
+
+  # Internal network for backend services
+  internal:
+    external: true

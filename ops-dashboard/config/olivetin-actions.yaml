@@ -1,0 +1,170 @@
+# OliveTin Actions Configuration
+# Example configuration for integrating with the Operations Dashboard
+#
+# Add these actions to your OliveTin config.yaml
+# Location: /etc/olivetin/config.yaml or as specified in your setup
+
+actions:
+  # ============================================
+  # BACKUP ACTIONS
+  # ============================================
+
+  - title: "Backup Stremio Stack"
+    icon: "&#128190;"
+    shell: /opt/scripts/backup.sh stremio
+    timeout: 600
+    arguments: []
+
+  - title: "Backup All Stacks"
+    icon: "&#128190;"
+    shell: |
+      /opt/scripts/backup.sh stremio
+      /opt/scripts/backup.sh portainer
+    timeout: 900
+
+  # ============================================
+  # RESTORE ACTIONS
+  # ============================================
+
+  - title: "Restore Stremio Stack"
+    icon: "&#128260;"
+    shell: /opt/scripts/restore.sh stremio {{ snapshot }}
+    timeout: 600
+    arguments:
+      - name: snapshot
+        title: "Snapshot ID"
+        description: "Enter snapshot ID or 'latest'"
+        type: ascii
+        default: "latest"
+
+  # ============================================
+  # UPDATE ACTIONS
+  # ============================================
+
+  - title: "Safe Update Stremio Stack"
+    icon: "&#8635;"
+    shell: /opt/scripts/update-stack.sh stremio
+    timeout: 900
+    description: "Backup, pull, and recreate containers"
+
+  - title: "Quick Update (No Backup)"
+    icon: "&#9888;"
+    shell: /opt/scripts/update-stack.sh stremio --no-backup
+    timeout: 600
+    description: "Pull and recreate without backup - USE WITH CAUTION"
+
+  # ============================================
+  # CONTAINER CONTROLS
+  # ============================================
+
+  - title: "Start Container"
+    icon: "&#9654;"
+    shell: docker start {{ container }}
+    arguments:
+      - name: container
+        title: "Container Name"
+        type: ascii
+        default: ""
+
+  - title: "Stop Container"
+    icon: "&#9632;"
+    shell: docker stop {{ container }}
+    arguments:
+      - name: container
+        title: "Container Name"
+        type: ascii
+        default: ""
+
+  - title: "Restart Container"
+    icon: "&#8635;"
+    shell: docker restart {{ container }}
+    arguments:
+      - name: container
+        title: "Container Name"
+        type: ascii
+        default: ""
+
+  # ============================================
+  # STACK CONTROLS
+  # ============================================
+
+  - title: "Start Stremio Stack"
+    icon: "&#9654;"
+    shell: docker compose -f /opt/stremio-stack/docker-compose.yml up -d
+    timeout: 120
+
+  - title: "Stop Stremio Stack"
+    icon: "&#9632;"
+    shell: docker compose -f /opt/stremio-stack/docker-compose.yml down
+    timeout: 120
+
+  - title: "Restart Stremio Stack"
+    icon: "&#8635;"
+    shell: |
+      docker compose -f /opt/stremio-stack/docker-compose.yml down
+      docker compose -f /opt/stremio-stack/docker-compose.yml up -d
+    timeout: 180
+
+  # ============================================
+  # INFORMATION ACTIONS
+  # ============================================
+
+  - title: "Active Streams"
+    icon: "&#128250;"
+    shell: /opt/scripts/streaming-count.sh 5
+    timeout: 30
+
+  - title: "Container Status"
+    icon: "&#128203;"
+    shell: docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+    timeout: 30
+
+  - title: "Disk Usage"
+    icon: "&#128451;"
+    shell: df -h / /opt
+    timeout: 30
+
+  - title: "System Load"
+    icon: "&#128187;"
+    shell: uptime && echo "" && free -h
+    timeout: 30
+
+  - title: "Docker Logs (Last 50)"
+    icon: "&#128220;"
+    shell: docker logs --tail 50 {{ container }}
+    arguments:
+      - name: container
+        title: "Container Name"
+        type: ascii
+        default: ""
+
+  # ============================================
+  # MAINTENANCE ACTIONS
+  # ============================================
+
+  - title: "Prune Docker System"
+    icon: "&#128465;"
+    shell: docker system prune -f
+    timeout: 300
+    description: "Remove unused containers, networks, and images"
+
+  - title: "Check Backup Repository"
+    icon: "&#128269;"
+    shell: |
+      restic check \
+        --repo /opt/backups/restic \
+        --password-file /opt/backups/.restic-password
+    timeout: 300
+
+  - title: "List Snapshots"
+    icon: "&#128203;"
+    shell: |
+      restic snapshots \
+        --repo /opt/backups/restic \
+        --password-file /opt/backups/.restic-password \
+        --tag stack:{{ stack }}
+    arguments:
+      - name: stack
+        title: "Stack Name"
+        type: ascii
+        default: "stremio"

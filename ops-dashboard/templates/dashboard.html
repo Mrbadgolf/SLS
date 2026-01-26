@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operations Dashboard - Streaming Stack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Operations Dashboard</h1>
+                <span class="subtitle">Docker Streaming Stack Control Plane</span>
+            </div>
+            <div class="header-right">
+                <div class="streaming-badge" id="streaming-badge">
+                    <span class="badge-icon">&#9679;</span>
+                    <span class="badge-count" id="active-streams">--</span>
+                    <span class="badge-label">Streaming Now</span>
+                </div>
+                <div class="connection-status" id="connection-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Quick Links -->
+        <nav class="quick-links">
+            <a href="{{ olivetin_url }}" target="_blank" class="quick-link olivetin">
+                <span class="link-icon">&#9881;</span>
+                <span class="link-text">OliveTin Actions</span>
+            </a>
+            <a href="{{ netdata_url }}" target="_blank" class="quick-link netdata">
+                <span class="link-icon">&#128200;</span>
+                <span class="link-text">Netdata Stats</span>
+            </a>
+            <a href="{{ portainer_url }}" target="_blank" class="quick-link portainer">
+                <span class="link-icon">&#128230;</span>
+                <span class="link-text">Portainer</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- System Stats Row -->
+            <section class="stats-section">
+                <h2>System Resources</h2>
+                <div class="stats-grid">
+                    <div class="stat-card cpu">
+                        <div class="stat-header">
+                            <span class="stat-icon">&#128187;</span>
+                            <span class="stat-title">CPU</span>
+                        </div>
+                        <div class="stat-value" id="cpu-percent">--</div>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" id="cpu-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-details" id="cpu-details">
+                            <span>Cores: --</span>
+                            <span>Load: --</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card memory">
+                        <div class="stat-header">
+                            <span class="stat-icon">&#128190;</span>
+                            <span class="stat-title">Memory</span>
+                        </div>
+                        <div class="stat-value" id="memory-percent">--</div>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" id="memory-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-details" id="memory-details">
+                            <span>Used: --</span>
+                            <span>Total: --</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card disk">
+                        <div class="stat-header">
+                            <span class="stat-icon">&#128451;</span>
+                            <span class="stat-title">Disk</span>
+                        </div>
+                        <div class="stat-value" id="disk-percent">--</div>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill" id="disk-bar" style="width: 0%"></div>
+                        </div>
+                        <div class="stat-details" id="disk-details">
+                            <span>Used: --</span>
+                            <span>Free: --</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card network">
+                        <div class="stat-header">
+                            <span class="stat-icon">&#128246;</span>
+                            <span class="stat-title">Network</span>
+                        </div>
+                        <div class="stat-value" id="network-stats">--</div>
+                        <div class="stat-details" id="network-details">
+                            <span>&#8595; --</span>
+                            <span>&#8593; --</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Containers Section -->
+            <section class="containers-section">
+                <div class="section-header">
+                    <h2>Containers</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-secondary" onclick="refreshContainers()">
+                            &#8635; Refresh
+                        </button>
+                        <select id="stack-filter" onchange="filterContainers()">
+                            <option value="all">All Stacks</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="containers-grid" id="containers-grid">
+                    <div class="loading">Loading containers...</div>
+                </div>
+            </section>
+
+            <!-- Streaming Activity Section -->
+            <section class="streaming-section">
+                <h2>Streaming Activity</h2>
+                <div class="streaming-details" id="streaming-details">
+                    <div class="streaming-stat">
+                        <span class="streaming-label">Active Viewers</span>
+                        <span class="streaming-value" id="streaming-viewers">--</span>
+                    </div>
+                    <div class="streaming-stat">
+                        <span class="streaming-label">Total Requests (5min)</span>
+                        <span class="streaming-value" id="streaming-requests">--</span>
+                    </div>
+                    <div class="streaming-stat">
+                        <span class="streaming-label">Last Updated</span>
+                        <span class="streaming-value" id="streaming-updated">--</span>
+                    </div>
+                </div>
+                <div class="streaming-endpoints" id="streaming-endpoints">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Backup Section -->
+            <section class="backup-section">
+                <div class="section-header">
+                    <h2>Backups & Snapshots</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-primary" onclick="showBackupModal()">
+                            &#128190; Create Backup
+                        </button>
+                    </div>
+                </div>
+                <div class="snapshots-list" id="snapshots-list">
+                    <div class="loading">Loading snapshots...</div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>Operations Dashboard v1.0.0</span>
+            <span id="uptime">Uptime: --</span>
+            <span id="last-refresh">Last refresh: --</span>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+    <!-- Container Action Modal -->
+    <div class="modal" id="container-modal">
+        <div class="modal-header">
+            <h3 id="modal-container-name">Container Actions</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-stats" id="modal-stats">
+                <!-- Container stats -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-success" onclick="containerAction('start')">
+                    &#9654; Start
+                </button>
+                <button class="btn btn-warning" onclick="containerAction('restart')">
+                    &#8635; Restart
+                </button>
+                <button class="btn btn-danger" onclick="containerAction('stop')">
+                    &#9632; Stop
+                </button>
+            </div>
+            <div class="modal-logs" id="modal-logs">
+                <!-- Container logs preview -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Modal -->
+    <div class="modal" id="backup-modal">
+        <div class="modal-header">
+            <h3>Create Backup</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="backup-stack">Select Stack</label>
+                <select id="backup-stack">
+                    <option value="stremio">stremio</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="createBackup()">
+                    Create Backup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore Modal -->
+    <div class="modal" id="restore-modal">
+        <div class="modal-header">
+            <h3>Restore from Snapshot</h3>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="warning-banner">
+                <strong>Warning:</strong> Restoring will overwrite current data.
+                Ensure the stack is stopped before proceeding.
+            </div>
+            <div class="form-group">
+                <label>Snapshot ID</label>
+                <input type="text" id="restore-snapshot-id" readonly>
+            </div>
+            <div class="form-group">
+                <label>Stack</label>
+                <input type="text" id="restore-stack-name" readonly>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="performRestore()">
+                    Restore Snapshot
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

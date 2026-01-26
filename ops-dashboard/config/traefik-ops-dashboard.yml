@@ -1,0 +1,80 @@
+# Operations Dashboard - Traefik File Provider Configuration
+#
+# DEPLOYMENT INSTRUCTIONS:
+# 1. Copy this file to your Traefik dynamic config directory:
+#    cp traefik-ops-dashboard.yml /opt/stremio-stack/traefik/dynamic/
+#
+# 2. Traefik will automatically pick up the new configuration
+#    (file.watch=true is enabled)
+#
+# REQUIREMENTS:
+# - ops-dashboard container must be on the 'stremio' network
+# - Traefik must be on the 'stremio' network
+# - ACME/Let's Encrypt resolver 'le' must be configured
+
+http:
+  routers:
+    # HTTP Router - Redirect to HTTPS
+    ops-dashboard-http:
+      rule: "Host(`ops.geaux-tv.com`)"
+      entryPoints:
+        - web
+      middlewares:
+        - ops-dashboard-https-redirect
+      service: ops-dashboard-service
+
+    # HTTPS Router - Main route with TLS
+    ops-dashboard-https:
+      rule: "Host(`ops.geaux-tv.com`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - ops-dashboard-auth
+        - ops-dashboard-security
+      service: ops-dashboard-service
+      tls:
+        certResolver: le
+
+  services:
+    # Backend service pointing to container
+    ops-dashboard-service:
+      loadBalancer:
+        servers:
+          # Container name + internal port
+          # Must be on same Docker network as Traefik
+          - url: "http://ops-dashboard:8080"
+        healthCheck:
+          path: /api/health
+          interval: "30s"
+          timeout: "5s"
+
+  middlewares:
+    # HTTPS redirect
+    ops-dashboard-https-redirect:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    # Basic Auth (same credentials as OliveTin)
+    # Username: mrbadgolf
+    # To generate a new hash: htpasswd -nbB username password
+    ops-dashboard-auth:
+      basicAuth:
+        users:
+          - "mrbadgolf:$2y$05$1/H9tHpHbfJ4Xeq04nsqyuVrTnE9t0ZHBBEt185Y9KsceMimR8UvS"
+        realm: "Operations Dashboard"
+        removeHeader: true
+
+    # Security headers
+    ops-dashboard-security:
+      headers:
+        browserXssFilter: true
+        contentTypeNosniff: true
+        frameDeny: true
+        sslRedirect: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customRequestHeaders:
+          X-Forwarded-Proto: https
